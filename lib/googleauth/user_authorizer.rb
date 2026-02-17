@@ -31,6 +31,7 @@ require "uri"
 require "multi_json"
 require "googleauth/signet"
 require "googleauth/user_refresh"
+require "googleauth/logging"
 
 module Google
   module Auth

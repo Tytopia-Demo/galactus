@@ -31,6 +31,7 @@ require "multi_json"
 require "googleauth/signet"
 require "googleauth/user_authorizer"
 require "googleauth/user_refresh"
+require "googleauth/logging"
 require "securerandom"
 
 module Google

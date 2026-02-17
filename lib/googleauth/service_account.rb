@@ -30,6 +30,7 @@
 require "googleauth/signet"
 require "googleauth/credentials_loader"
 require "googleauth/json_key_reader"
+require "googleauth/logging"
 require "jwt"
 require "multi_json"
 require "stringio"
@@ -61,13 +62,17 @@ module Google
         json_key_io, scope, target_audience = options.values_at :json_key_io, :scope, :target_audience
         raise ArgumentError, "Cannot specify both scope and target_audience" if scope && target_audience
 
+        Google::Auth::Logging.debug "Creating ServiceAccountCredentials"
+
         if json_key_io
           private_key, client_email, project_id, quota_project_id = read_json_key json_key_io
+          Google::Auth::Logging.info "Loaded service account credentials from JSON key"
         else
           private_key = unescape ENV[CredentialsLoader::PRIVATE_KEY_VAR]
           client_email = ENV[CredentialsLoader::CLIENT_EMAIL_VAR]
           project_id = ENV[CredentialsLoader::PROJECT_ID_VAR]
           quota_project_id = nil
+          Google::Auth::Logging.info "Loaded service account credentials from environment variables"
         end
         project_id ||= CredentialsLoader.load_gcloud_project_id
 

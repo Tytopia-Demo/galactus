@@ -29,6 +29,7 @@
 
 require "faraday"
 require "googleauth/signet"
+require "googleauth/logging"
 require "memoist"
 
 module Google
@@ -64,15 +65,18 @@ module Google
         # is available.
         def on_gce? options = {}
           # TODO: This should use google-cloud-env instead.
+          Google::Auth::Logging.debug "Checking if running on GCE"
           c = options[:connection] || Faraday.default_connection
           headers = { "Metadata-Flavor" => "Google" }
           resp = c.get COMPUTE_CHECK_URI, nil, headers do |req|
             req.options.timeout = 1.0
             req.options.open_timeout = 0.1
           end
-          return false unless resp.status == 200
-          resp.headers["Metadata-Flavor"] == "Google"
-        rescue Faraday::TimeoutError, Faraday::ConnectionFailed
+          on_gce = resp.status == 200 && resp.headers["Metadata-Flavor"] == "Google"
+          Google::Auth::Logging.info "GCE detection result: #{on_gce}"
+          on_gce
+        rescue Faraday::TimeoutError, Faraday::ConnectionFailed => e
+          Google::Auth::Logging.debug "GCE detection failed: #{e.class} - not on GCE"
           false
         end
 
@@ -82,6 +86,7 @@ module Google
       # Overrides the super class method to change how access tokens are
       # fetched.
       def fetch_access_token options = {}
+        Google::Auth::Logging.debug "Fetching access token from GCE metadata server"
         c = options[:connection] || Faraday.default_connection
         retry_with_error do
           uri = target_audience ? COMPUTE_ID_TOKEN_URI : COMPUTE_AUTH_TOKEN_URI
@@ -91,6 +96,7 @@ module Google
           resp = c.get uri, query, headers
           case resp.status
           when 200
+            Google::Auth::Logging.info "Successfully fetched access token from GCE metadata"
             content_type = resp.headers["content-type"]
             if content_type == "text/html"
               { (target_audience ? "id_token" : "access_token") => resp.body }
@@ -98,10 +104,12 @@ module Google
               Signet::OAuth2.parse_credentials resp.body, content_type
             end
           when 404
+            Google::Auth::Logging.error "GCE metadata server returned 404 - no permission scopes"
             raise Signet::AuthorizationError, NO_METADATA_SERVER_ERROR
           else
             msg = "Unexpected error code #{resp.status}" \
               "#{UNEXPECTED_ERROR_SUFFIX}"
+            Google::Auth::Logging.error "Failed to fetch token: #{msg}"
             raise Signet::AuthorizationError, msg
           end
         end

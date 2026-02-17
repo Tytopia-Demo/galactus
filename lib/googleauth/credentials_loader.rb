@@ -30,6 +30,7 @@
 require "memoist"
 require "os"
 require "rbconfig"
+require "googleauth/logging"
 
 module Google
   # Module Auth provides classes that provide Google-specific authorization
@@ -168,7 +169,9 @@ module Google
       # Issues warning if cloud sdk client id is used
       def warn_if_cloud_sdk_credentials client_id
         return if ENV["GOOGLE_AUTH_SUPPRESS_CREDENTIALS_WARNINGS"]
-        warn CLOUD_SDK_CREDENTIALS_WARNING if client_id == CLOUD_SDK_CLIENT_ID
+        if client_id == CLOUD_SDK_CLIENT_ID
+          Google::Auth::Logging.warn CLOUD_SDK_CREDENTIALS_WARNING
+        end
       end
 
       # Finds project_id from gcloud CLI configuration

@@ -32,6 +32,7 @@ require "json"
 require "signet/oauth_2/client"
 
 require "googleauth/credentials_loader"
+require "googleauth/logging"
 
 module Google
   module Auth
