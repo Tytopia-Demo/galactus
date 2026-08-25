@@ -34,3 +34,25 @@ build/
 
 # unless supporting rvm < 1.11.0 or doing something fancy, ignore this:
 .rvmrc
+
+# Ruby version managers:
+.ruby-version
+.ruby-gemset
+
+# RuboCop cache and remotely-fetched configs:
+.rubocop-https?--*
+
+# Bundler vendor installs:
+/vendor/bundle/
+/vendor/cache/
+
+# Environment and secret files:
+.env
+.env.*
+
+# Logs:
+*.log
+
+# OS artifacts:
+.DS_Store
+Thumbs.db
