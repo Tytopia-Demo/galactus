@@ -8,6 +8,7 @@
 </dl>
 
 [![Gem Version](https://badge.fury.io/rb/googleauth.svg)](http://badge.fury.io/rb/googleauth)
+[![CI](https://github.com/googleapis/google-auth-library-ruby/actions/workflows/ci.yml/badge.svg)](https://github.com/googleapis/google-auth-library-ruby/actions/workflows/ci.yml)
 
 ## Description
 
